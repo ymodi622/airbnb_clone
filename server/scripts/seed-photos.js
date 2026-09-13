@@ -87,7 +87,7 @@ async function run() {
 
   let conn;
   try {
-    conn = await mysql.createConnection({
+    const connConfig = {
       host:     process.env.DB_HOST     ?? 'localhost',
       port:     parseInt(process.env.DB_PORT ?? '3306', 10),
       user:     process.env.DB_USER     ?? 'airbnb_app',
@@ -95,11 +95,17 @@ async function run() {
       database: process.env.DB_NAME     ?? 'airbnb_db',
       timezone: '+00:00',
       multipleStatements: false,
-    });
-    console.log(`✅  Connected to MySQL → ${process.env.DB_NAME}`);
+    };
+
+    if (process.env.DB_SSL === 'true' || (connConfig.host !== 'localhost' && connConfig.host !== '127.0.0.1')) {
+      connConfig.ssl = { rejectUnauthorized: false };
+    }
+
+    conn = await mysql.createConnection(connConfig);
+    console.log(`✅  Connected to MySQL → ${connConfig.database} (${connConfig.host}:${connConfig.port})`);
   } catch (e) {
     console.error(`❌  DB connection failed: ${e.message}`);
-    console.error('    Check server/.env and make sure MySQL is running.');
+    console.error('    Check environment variables and make sure MySQL is accessible.');
     process.exit(1);
   }
 

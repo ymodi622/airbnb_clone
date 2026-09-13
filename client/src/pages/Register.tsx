@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { BASE_URL } from '../services/api';
 
 export default function Register() {
   const [email, setEmail] = useState('');
@@ -17,7 +18,7 @@ export default function Register() {
 
     try {
       // 1. Register
-      const registerRes = await fetch('http://localhost:4000/api/auth/register', {
+      const registerRes = await fetch(`${BASE_URL}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -28,7 +29,7 @@ export default function Register() {
       }
       
       // 2. Auto Login
-      const loginRes = await fetch('http://localhost:4000/api/auth/login', {
+      const loginRes = await fetch(`${BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -39,7 +40,7 @@ export default function Register() {
       }
       
       // 3. Fetch User
-      const meRes = await fetch('http://localhost:4000/api/auth/me', { credentials: 'include' });
+      const meRes = await fetch(`${BASE_URL}/api/auth/me`, { credentials: 'include' });
       const meData = await meRes.json();
       setUser(meData.user);
       

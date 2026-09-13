@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { BASE_URL } from '../services/api';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -16,7 +17,7 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const res = await fetch('http://localhost:4000/api/auth/login', {
+      const res = await fetch(`${BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -28,7 +29,7 @@ export default function Login() {
       }
       
       // Fetch user data directly after login to sync context
-      const meRes = await fetch('http://localhost:4000/api/auth/me', { credentials: 'include' });
+      const meRes = await fetch(`${BASE_URL}/api/auth/me`, { credentials: 'include' });
       const meData = await meRes.json();
       setUser(meData.user);
       navigate('/');

@@ -18,9 +18,11 @@ const app = express();
 // ── Security headers ──────────────────────────────────────────────────────────
 app.use(helmet());
 
-// ── CORS — locked to exact frontend origin, never * ──────────────────────────
+// ── CORS — locked to frontend origin and localhost ──────────────────────────
 const allowedOrigins = [
   config.clientUrl,
+  'https://client-nine-beta-72.vercel.app',
+  'http://localhost:5173',
   'http://localhost:5174',
   'http://127.0.0.1:5173',
   'http://127.0.0.1:5174'
@@ -29,17 +31,20 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps or curl requests)
+      // Allow requests with no origin (like mobile apps, health checks, or curl)
       if (!origin) return callback(null, true);
-      if (allowedOrigins.indexOf(origin) !== -1) {
+      if (
+        allowedOrigins.includes(origin) ||
+        origin.endsWith('.vercel.app')
+      ) {
         callback(null, true);
       } else {
-        callback(new Error('Not allowed by CORS'));
+        callback(new Error(`Not allowed by CORS: ${origin}`));
       }
     },
     credentials: true, // required for cookies to work cross-origin
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
 

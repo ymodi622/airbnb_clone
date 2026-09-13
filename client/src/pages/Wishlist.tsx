@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import { useAuth } from '../context/AuthContext';
+import { BASE_URL } from '../services/api';
 
 type WishlistItem = {
   id: number;
@@ -26,7 +27,7 @@ export default function Wishlist() {
     }
 
     if (user) {
-      fetch('http://localhost:4000/api/wishlist', {
+      fetch(`${BASE_URL}/api/wishlist`, {
         credentials: 'include'
       })
       .then(res => {

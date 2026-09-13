@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
+import { BASE_URL } from '../services/api';
 
 type User = {
   id: number;
@@ -21,7 +22,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Check session on mount
-    fetch('http://localhost:4000/api/auth/me', {
+    fetch(`${BASE_URL}/api/auth/me`, {
       credentials: 'include',
     })
       .then((res) => {
@@ -34,7 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = async () => {
-    await fetch('http://localhost:4000/api/auth/logout', { method: 'POST', credentials: 'include' });
+    await fetch(`${BASE_URL}/api/auth/logout`, { method: 'POST', credentials: 'include' });
     setUser(null);
   };
 

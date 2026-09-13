@@ -2,13 +2,22 @@
 const jwt = require('jsonwebtoken');
 const config = require('../config/env');
 
+function getTokenFromReq(req) {
+  if (req.cookies?.token) return req.cookies.token;
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    return authHeader.substring(7);
+  }
+  return null;
+}
+
 /**
- * requireAuth — verifies the JWT from the httpOnly cookie.
+ * requireAuth — verifies the JWT from httpOnly cookie or Authorization header.
  * Attaches the decoded payload to req.user on success.
  * Returns 401 if missing or invalid.
  */
 function requireAuth(req, res, next) {
-  const token = req.cookies?.token;
+  const token = getTokenFromReq(req);
 
   if (!token) {
     const err = new Error('Authentication required.');
@@ -34,7 +43,7 @@ function requireAuth(req, res, next) {
  * (e.g., wishlist status for logged-out users returns false instead of 401).
  */
 function optionalAuth(req, res, next) {
-  const token = req.cookies?.token;
+  const token = getTokenFromReq(req);
 
   if (!token) {
     req.user = null;
@@ -51,3 +60,4 @@ function optionalAuth(req, res, next) {
 }
 
 module.exports = { requireAuth, optionalAuth };
+

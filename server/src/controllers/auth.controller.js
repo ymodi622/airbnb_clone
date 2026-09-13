@@ -20,18 +20,21 @@ const loginBodySchema = z.object({
   password: z.string().min(1, 'Password is required.'),
 });
 
-/** Sets the JWT as a secure httpOnly cookie */
+/** Sets the JWT as a secure httpOnly cookie and returns the token */
 function setAuthCookie(res, userId, email) {
   const token = jwt.sign({ sub: userId, email }, config.jwt.secret, {
     expiresIn: config.jwt.expiresIn,
   });
 
+  const isProduction = config.nodeEnv === 'production';
   res.cookie('token', token, {
     httpOnly: true,
-    secure: config.nodeEnv === 'production',
-    sameSite: 'Strict',
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax',
     maxAge: 15 * 60 * 1000, // 15 minutes in ms
   });
+
+  return token;
 }
 
 /**
@@ -91,9 +94,13 @@ async function login(req, res, next) {
       return next(err);
     }
 
-    setAuthCookie(res, user.id, user.email);
+    const token = setAuthCookie(res, user.id, user.email);
 
-    res.json({ message: 'Logged in successfully.' });
+    res.json({
+      message: 'Logged in successfully.',
+      token,
+      user: { id: user.id, email: user.email },
+    });
   } catch (err) {
     next(err);
   }
@@ -104,10 +111,11 @@ async function login(req, res, next) {
  * Clears the auth cookie.
  */
 function logout(req, res) {
+  const isProduction = config.nodeEnv === 'production';
   res.clearCookie('token', {
     httpOnly: true,
-    secure: config.nodeEnv === 'production',
-    sameSite: 'Strict',
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax',
   });
   res.json({ message: 'Logged out.' });
 }
