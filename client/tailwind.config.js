@@ -1,0 +1,17 @@
+/** @type {import('tailwindcss').Config} */
+export default {
+  darkMode: "class",
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: { 
+    extend: { 
+      "colors": { "on-surface": "#1c1b1a", "on-tertiary-fixed-variant": "#484743", "on-primary": "#ffffff", "surface-tint": "#9c432f", "outline": "#89726d", "surface-variant": "#e6e2df", "inverse-primary": "#ffb4a4", "primary-fixed-dim": "#ffb4a4", "on-secondary-fixed": "#271900", "surface": "#fdf8f6", "on-error": "#ffffff", "on-secondary-fixed-variant": "#5d4200", "surface-container-highest": "#e6e2df", "outline-variant": "#dcc1bb", "on-surface-variant": "#56423e", "on-background": "#1c1b1a", "on-secondary-container": "#785500", "inverse-surface": "#31302f", "error-container": "#ffdad6", "secondary-fixed-dim": "#eebf66", "error": "#ba1a1a", "on-primary-fixed-variant": "#7d2c1a", "on-primary-fixed": "#3d0600", "primary": "#933c29", "on-primary-container": "#fff1ee", "surface-dim": "#ddd9d7", "surface-container-high": "#ece7e5", "tertiary-container": "#716f6b", "on-tertiary-fixed": "#1c1c19", "tertiary": "#585753", "surface-container": "#f1edeb", "secondary": "#7b5802", "on-error-container": "#93000a", "surface-bright": "#fdf8f6", "on-tertiary-container": "#f7f3ee", "on-secondary": "#ffffff", "background": "#fdf8f6", "tertiary-fixed": "#e6e2dd", "inverse-on-surface": "#f4f0ee", "secondary-container": "#fdcd73", "surface-container-low": "#f7f3f0", "primary-fixed": "#ffdad3", "primary-container": "#b2533e", "surface-container-lowest": "#ffffff", "on-tertiary": "#ffffff", "tertiary-fixed-dim": "#c9c6c1", "secondary-fixed": "#ffdea6" }, 
+      "borderRadius": { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" }, 
+      "spacing": { "gutter-desktop": "2.5rem", "space-xl": "2.5rem", "space-md": "1rem", "gutter": "1.5rem", "margin": "1.25rem", "margin-desktop": "5rem", "margin-tablet": "2.5rem", "space-sm": "0.5rem", "space-xs": "0.25rem", "space-lg": "1.5rem" }, 
+      "fontFamily": { "headline-md": ["Newsreader"], "body-sm": ["Plus Jakarta Sans"], "label-md": ["Plus Jakarta Sans"], "label-sm": ["Plus Jakarta Sans"], "title-lg": ["Plus Jakarta Sans"], "headline-sm": ["Newsreader"], "display-lg-mobile": ["Newsreader"], "display-lg": ["Newsreader"], "headline-lg": ["Newsreader"], "body-lg": ["Plus Jakarta Sans"], "body-md": ["Plus Jakarta Sans"], "headline-lg-mobile": ["Newsreader"] }, 
+      "fontSize": { "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "500" }], "body-sm": ["13px", { "lineHeight": "20px", "fontWeight": "400" }], "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "600" }], "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.06em", "fontWeight": "600" }], "title-lg": ["18px", { "lineHeight": "26px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "headline-sm": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.005em", "fontWeight": "500" }], "display-lg-mobile": ["38px", { "lineHeight": "44px", "letterSpacing": "-0.015em", "fontWeight": "400" }], "display-lg": ["56px", { "lineHeight": "64px", "letterSpacing": "-0.02em", "fontWeight": "400" }], "headline-lg": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.015em", "fontWeight": "400" }], "body-lg": ["17px", { "lineHeight": "28px", "fontWeight": "400" }], "body-md": ["15px", { "lineHeight": "24px", "fontWeight": "400" }], "headline-lg-mobile": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "400" }] } 
+    } 
+  }
+}
