@@ -19,11 +19,10 @@
  *   --listing <id>  Filter entries to this listing_id only
  */
 
-'use strict';
-
-require('dotenv').config();
 const path  = require('path');
 const fs    = require('fs');
+require('dotenv').config();
+require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 const mysql = require('mysql2/promise');
 
 // ─── CLI flags ───────────────────────────────────────────────────────────────
