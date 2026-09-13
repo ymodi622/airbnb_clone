@@ -88,7 +88,7 @@ function PhotoGrid({
 // ── Main component ─────────────────────────────────────────────────────────
 export default function PhotoTour() {
     const navigate = useNavigate();
-    const { listing, photos, photosByRoom, loading, error } = useListing(1);
+    const { listing, photosByRoom, loading, error } = useListing(1);
     const { showToast } = useToast();
 
     const [isSaved, setIsSaved]           = useState(false);
