@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Returns an Express middleware that validates req.params / req.query / req.body
+ * Returns an Express middleware that  validates req.params / req.query / req.body
  * against the provided Zod schemas. Pass null to skip any section.
  *
  * Usage:
