@@ -1,14 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useListing } from '../hooks/useListing';
-import type { Photo } from '../services/api';
 import { useToast } from '../context/ToastContext';
 
 // Room label → section ID slug
-const labelToId = (label: string) => label.toLowerCase().replace(/\s+/g, '-');
+const labelToId = (label) => label.toLowerCase().replace(/\s+/g, '-');
 
 // Room label → amenity description
-const ROOM_DESC: Record<string, string> = {
+const ROOM_DESC = {
   'Living room': 'Sofa · Air conditioning · Ceiling fan · TV · Dining area',
   'Kitchen':     'Freezer · Fridge · Blender · Cooker · Microwave · Toaster · Kettle · Coffee · Crockery & cutlery',
   'Bedroom':     'Double bed · Air conditioning · Bed linen · Ceiling fan · Clothes storage · Hangers · Iron · WiFi',
@@ -19,18 +18,10 @@ const ROOM_DESC: Record<string, string> = {
 };
 
 // ── Photo grid renderer ─────────────────────────────────────────────────────
-function PhotoGrid({
-    photos,
-    startIndex,
-    onOpen,
-}: {
-    photos: Photo[];
-    startIndex: number;
-    onOpen: (i: number) => void;
-}) {
+function PhotoGrid({ photos, startIndex, onOpen }) {
     if (photos.length === 0) return null;
 
-    const rows: Photo[][] = [];
+    const rows = [];
     let i = 0;
     // First photo spans full width
     rows.push([photos[i++]]);
@@ -93,22 +84,22 @@ export default function PhotoTour() {
 
     const [isSaved, setIsSaved]           = useState(false);
     const [activeSection, setActiveSection] = useState('');
-    const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+    const [lightboxIndex, setLightboxIndex] = useState(null);
 
     const roomLabels = Object.keys(photosByRoom);
 
     // Build a flat ordered array for lightbox navigation
     const flatPhotos = roomLabels.flatMap((label) => photosByRoom[label]);
 
-    const openLightbox  = (i: number) => setLightboxIndex(i);
+    const openLightbox  = (i) => setLightboxIndex(i);
     const closeLightbox = () => setLightboxIndex(null);
 
-    const nextPhoto = (e?: React.MouseEvent) => {
+    const nextPhoto = (e) => {
         e?.stopPropagation();
         if (lightboxIndex !== null)
             setLightboxIndex((lightboxIndex + 1) % flatPhotos.length);
     };
-    const prevPhoto = (e?: React.MouseEvent) => {
+    const prevPhoto = (e) => {
         e?.stopPropagation();
         if (lightboxIndex !== null)
             setLightboxIndex((lightboxIndex - 1 + flatPhotos.length) % flatPhotos.length);
@@ -142,7 +133,7 @@ export default function PhotoTour() {
 
     // Keyboard nav for lightbox
     useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
+        const handleKeyDown = (e) => {
             if (lightboxIndex === null) return;
             if (e.key === 'Escape')      closeLightbox();
             if (e.key === 'ArrowRight')  setLightboxIndex(prev => prev !== null ? (prev + 1) % flatPhotos.length : null);

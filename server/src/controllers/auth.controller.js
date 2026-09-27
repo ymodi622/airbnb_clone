@@ -2,7 +2,7 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { z } = require('zod');
-const pool = require('../db/pool');
+const User = require('../models/User');
 const config = require('../config/env');
 
 const BCRYPT_ROUNDS = 12;
@@ -46,11 +46,8 @@ async function register(req, res, next) {
     const { email, password } = req.body;
 
     // Check for existing user
-    const [existing] = await pool.query(
-      'SELECT id FROM users WHERE email = ?',
-      [email]
-    );
-    if (existing.length > 0) {
+    const existing = await User.findOne({ email });
+    if (existing) {
       const err = new Error('An account with that email already exists.');
       err.statusCode = 409;
       return next(err);
@@ -58,10 +55,10 @@ async function register(req, res, next) {
 
     const password_hash = await bcrypt.hash(password, BCRYPT_ROUNDS);
 
-    await pool.query(
-      'INSERT INTO users (email, password_hash) VALUES (?, ?)',
-      [email, password_hash]
-    );
+    await User.create({
+      email,
+      password_hash,
+    });
 
     res.status(201).json({ message: 'Account created. Please log in.' });
   } catch (err) {
@@ -77,15 +74,10 @@ async function login(req, res, next) {
   try {
     const { email, password } = req.body;
 
-    const [users] = await pool.query(
-      'SELECT id, email, password_hash FROM users WHERE email = ?',
-      [email]
-    );
+    const user = await User.findOne({ email });
 
     // Use constant-time comparison to avoid timing attacks
-    const user = users[0] || null;
     const hash = user ? user.password_hash : '$2b$12$invalidhashpaddingtoconstanttime';
-
     const match = await bcrypt.compare(password, hash);
 
     if (!user || !match) {
@@ -94,12 +86,13 @@ async function login(req, res, next) {
       return next(err);
     }
 
-    const token = setAuthCookie(res, user.id, user.email);
+    const userIdStr = user._id.toString();
+    const token = setAuthCookie(res, userIdStr, user.email);
 
     res.json({
       message: 'Logged in successfully.',
       token,
-      user: { id: user.id, email: user.email },
+      user: { id: userIdStr, email: user.email },
     });
   } catch (err) {
     next(err);
@@ -111,34 +104,23 @@ async function login(req, res, next) {
  * Clears the auth cookie.
  */
 function logout(req, res) {
-  const isProduction = config.nodeEnv === 'production';
-  res.clearCookie('token', {
-    httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? 'none' : 'lax',
-  });
-  res.json({ message: 'Logged out.' });
+  res.clearCookie('token');
+  res.json({ message: 'Logged out successfully.' });
 }
 
 /**
  * GET /api/auth/me
- * Returns the current user from a valid cookie. 401 if none/invalid.
+ * Returns current authenticated user profile.
  */
 async function me(req, res, next) {
   try {
-    // req.user is set by requireAuth middleware
-    const [users] = await pool.query(
-      'SELECT id, email, created_at FROM users WHERE id = ?',
-      [req.user.id]
-    );
-
-    if (users.length === 0) {
+    const user = await User.findById(req.user.id).select('email createdAt');
+    if (!user) {
       const err = new Error('User not found.');
-      err.statusCode = 401;
+      err.statusCode = 404;
       return next(err);
     }
-
-    res.json({ user: users[0] });
+    res.json({ user: { id: user._id.toString(), email: user.email } });
   } catch (err) {
     next(err);
   }

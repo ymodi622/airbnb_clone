@@ -22,7 +22,7 @@ export default function LightboxViewer() {
     }, [navigate]);
 
     useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
+        const handleKeyDown = (e) => {
             if (e.key === 'ArrowRight') handleNext();
             if (e.key === 'ArrowLeft')  handlePrev();
             if (e.key === 'Escape')     handleClose();

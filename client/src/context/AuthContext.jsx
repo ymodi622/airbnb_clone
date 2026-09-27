@@ -1,23 +1,10 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import type { ReactNode } from 'react';
 import { BASE_URL } from '../services/api';
 
-type User = {
-  id: number;
-  email: string;
-};
+const AuthContext = createContext(undefined);
 
-type AuthContextType = {
-  user: User | null;
-  setUser: (user: User | null) => void;
-  logout: () => Promise<void>;
-  loading: boolean;
-};
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

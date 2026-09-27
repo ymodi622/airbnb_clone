@@ -4,18 +4,8 @@ import Header from '../components/Header';
 import { useAuth } from '../context/AuthContext';
 import { BASE_URL } from '../services/api';
 
-type WishlistItem = {
-  id: number;
-  title: string;
-  subtitle: string;
-  property_type: string;
-  location: string;
-  price_per_night: string;
-  cover_photo: string;
-};
-
 export default function Wishlist() {
-  const [items, setItems] = useState<WishlistItem[]>([]);
+  const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();

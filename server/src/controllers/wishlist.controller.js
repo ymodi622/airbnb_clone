@@ -1,10 +1,19 @@
 'use strict';
 const { z } = require('zod');
-const pool = require('../db/pool');
+const Listing = require('../models/Listing');
+const Wishlist = require('../models/Wishlist');
 
 const listingIdParamsSchema = z.object({
-  listingId: z.coerce.number().int().positive(),
+  listingId: z.coerce.string().min(1),
 });
+
+/** Helper to resolve a listing by numericId or MongoDB _id */
+async function findListingById(listingId) {
+  if (/^\d+$/.test(listingId)) {
+    return await Listing.findOne({ numericId: parseInt(listingId, 10) });
+  }
+  return await Listing.findById(listingId);
+}
 
 /**
  * POST /api/wishlist/:listingId
@@ -17,35 +26,23 @@ async function toggleWishlist(req, res, next) {
     const userId = req.user.id;
 
     // Check if listing exists
-    const [listings] = await pool.query(
-      'SELECT id FROM listings WHERE id = ?',
-      [listingId]
-    );
-    if (listings.length === 0) {
+    const listing = await findListingById(listingId);
+    if (!listing) {
       const err = new Error('Listing not found.');
       err.statusCode = 404;
       return next(err);
     }
 
     // Check current wishlist state
-    const [existing] = await pool.query(
-      'SELECT user_id FROM wishlists WHERE user_id = ? AND listing_id = ?',
-      [userId, listingId]
-    );
+    const existing = await Wishlist.findOne({ user: userId, listing: listing._id });
 
-    if (existing.length > 0) {
+    if (existing) {
       // Already saved — unsave
-      await pool.query(
-        'DELETE FROM wishlists WHERE user_id = ? AND listing_id = ?',
-        [userId, listingId]
-      );
+      await Wishlist.deleteOne({ _id: existing._id });
       return res.json({ saved: false });
     } else {
       // Not saved — save
-      await pool.query(
-        'INSERT INTO wishlists (user_id, listing_id) VALUES (?, ?)',
-        [userId, listingId]
-      );
+      await Wishlist.create({ user: userId, listing: listing._id });
       return res.json({ saved: true });
     }
   } catch (err) {
@@ -56,8 +53,7 @@ async function toggleWishlist(req, res, next) {
 /**
  * GET /api/wishlist/:listingId/status
  * Returns { saved: boolean }.
- * Uses optionalAuth — if not logged in, returns { saved: false } rather than 401,
- * so the heart icon always renders for logged-out users.
+ * Uses optionalAuth — if not logged in, returns { saved: false } rather than 401.
  */
 async function getWishlistStatus(req, res, next) {
   try {
@@ -67,12 +63,13 @@ async function getWishlistStatus(req, res, next) {
       return res.json({ saved: false });
     }
 
-    const [rows] = await pool.query(
-      'SELECT user_id FROM wishlists WHERE user_id = ? AND listing_id = ?',
-      [req.user.id, listingId]
-    );
+    const listing = await findListingById(listingId);
+    if (!listing) {
+      return res.json({ saved: false });
+    }
 
-    res.json({ saved: rows.length > 0 });
+    const existing = await Wishlist.findOne({ user: req.user.id, listing: listing._id });
+    res.json({ saved: !!existing });
   } catch (err) {
     next(err);
   }
@@ -87,16 +84,28 @@ async function getUserWishlists(req, res, next) {
   try {
     const userId = req.user.id;
 
-    // Fetch listings joined with their first photo for the thumbnail
-    const [rows] = await pool.query(`
-      SELECT 
-        l.id, l.title, l.subtitle, l.property_type, l.location, l.price_per_night,
-        (SELECT url FROM listing_photos lp WHERE lp.listing_id = l.id ORDER BY sort_order ASC LIMIT 1) as cover_photo
-      FROM listings l
-      JOIN wishlists w ON l.id = w.listing_id
-      WHERE w.user_id = ?
-      ORDER BY w.created_at DESC
-    `, [userId]);
+    // Fetch wishlists with populated listing details
+    const wishlists = await Wishlist.find({ user: userId })
+      .populate('listing')
+      .sort({ createdAt: -1 });
+
+    const rows = wishlists
+      .map((w) => {
+        const l = w.listing;
+        if (!l) return null;
+        const cover_photo = l.photos && l.photos.length > 0 ? l.photos[0].url : null;
+        return {
+          id: l.numericId || l._id.toString(),
+          _id: l._id.toString(),
+          title: l.title,
+          subtitle: l.subtitle,
+          property_type: l.property_type,
+          location: l.location,
+          price_per_night: l.price_per_night,
+          cover_photo,
+        };
+      })
+      .filter(Boolean);
 
     res.json(rows);
   } catch (err) {
@@ -104,4 +113,9 @@ async function getUserWishlists(req, res, next) {
   }
 }
 
-module.exports = { toggleWishlist, getWishlistStatus, getUserWishlists, listingIdParamsSchema };
+module.exports = {
+  toggleWishlist,
+  getWishlistStatus,
+  getUserWishlists,
+  listingIdParamsSchema,
+};

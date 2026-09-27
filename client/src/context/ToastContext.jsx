@@ -1,18 +1,13 @@
 import { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import type { ReactNode } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 
-interface ToastContextType {
-    showToast: (message?: string) => void;
-}
+const ToastContext = createContext(undefined);
 
-const ToastContext = createContext<ToastContextType | undefined>(undefined);
-
-export function ToastProvider({ children }: { children: ReactNode }) {
+export function ToastProvider({ children }) {
     const [isVisible, setIsVisible] = useState(false);
     const [message, setMessage] = useState('');
 
-    const showToast = useCallback((msg: string = 'Service is not available') => {
+    const showToast = useCallback((msg = 'Service is not available') => {
         setMessage(msg);
         setIsVisible(true);
     }, []);

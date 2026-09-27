@@ -1,16 +1,5 @@
 import { useState, useEffect } from 'react';
-import { api, type Listing, type Photo } from '../services/api';
-import { fallbackListing } from '../data/fallbackListing';
-
-export type PhotosByRoom = Record<string, Photo[]>;
-
-export interface UseListingResult {
-  listing: Listing | null;
-  photos: Photo[];
-  photosByRoom: PhotosByRoom;
-  loading: boolean;
-  error: string | null;
-}
+import { api } from '../services/api';
 
 const ROOM_ORDER = [
   'Living room',
@@ -23,10 +12,11 @@ const ROOM_ORDER = [
   'Other',
 ];
 
-export function useListing(id: number): UseListingResult {
-  const [listing, setListing] = useState<Listing | null>(null);
+export function useListing(id) {
+  const [listing, setListing] = useState(null);
+  const [photos, setPhotos] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     setLoading(true);
@@ -34,21 +24,22 @@ export function useListing(id: number): UseListingResult {
     api
       .getListing(id)
       .then((data) => {
-        // ensure photos sorted by sort_order
-        data.photos.sort((a, b) => a.sort_order - b.sort_order);
-        setListing(data);
+        // API returns { listing, photos, amenities }
+        const sortedPhotos = (data.photos ?? []).sort(
+          (a, b) => a.sort_order - b.sort_order
+        );
+        setListing(data.listing ?? data);
+        setPhotos(sortedPhotos);
       })
-      .catch((err: Error) => {
-        console.warn('API Failed, using fallback listing:', err.message);
-        setListing(fallbackListing);
+      .catch((err) => {
+        console.error('Failed to load listing:', err.message);
+        setError(err.message);
       })
       .finally(() => setLoading(false));
   }, [id]);
 
-  const photos = listing?.photos ?? [];
-
   // Group photos by room_label, preserving ROOM_ORDER
-  const photosByRoom: PhotosByRoom = {};
+  const photosByRoom = {};
   for (const room of ROOM_ORDER) {
     const group = photos.filter((p) => p.room_label === room);
     if (group.length > 0) photosByRoom[room] = group;

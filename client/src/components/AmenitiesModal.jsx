@@ -1,12 +1,7 @@
 import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 
-type AmenitiesModalProps = {
-  isOpen: boolean;
-  onClose: () => void;
-};
-
-export default function AmenitiesModal({ isOpen, onClose }: AmenitiesModalProps) {
+export default function AmenitiesModal({ isOpen, onClose }) {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -19,7 +14,7 @@ export default function AmenitiesModal({ isOpen, onClose }: AmenitiesModalProps)
   }, [isOpen]);
 
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
+    const handleKeyDown = (e) => {
       if (e.key === 'Escape' && isOpen) {
         onClose();
       }
@@ -149,7 +144,7 @@ export default function AmenitiesModal({ isOpen, onClose }: AmenitiesModalProps)
                     <svg className="w-6 h-6 text-neutral-800 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                       <path d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
-                    <span>Microwave & Coffee maker</span>
+                    <span>Microwave &amp; Coffee maker</span>
                   </div>
                 </div>
               </div>

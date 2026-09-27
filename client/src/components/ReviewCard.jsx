@@ -1,15 +1,6 @@
 import { motion } from 'motion/react';
 
-type ReviewCardProps = {
-  authorName: string;
-  authorImage: string;
-  date: string;
-  duration: string;
-  rating: number;
-  content: string;
-};
-
-export default function ReviewCard({ authorName, authorImage, date, duration, rating, content }: ReviewCardProps) {
+export default function ReviewCard({ authorName, authorImage, date, duration, rating, content }) {
   return (
     <motion.div 
       whileHover={{ y: -2 }}

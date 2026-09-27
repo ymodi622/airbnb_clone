@@ -1,9 +1,9 @@
 'use strict';
-const pool = require('../db/pool');
+const Listing = require('../models/Listing');
 const { z } = require('zod');
 
 const paramsSchema = z.object({
-  id: z.coerce.number().int().positive(),
+  id: z.coerce.string().min(1),
 });
 
 /**
@@ -13,40 +13,61 @@ const paramsSchema = z.object({
  */
 async function getListing(req, res, next) {
   try {
-    // 1. Validate params (already done by middleware, but re-binding for clarity)
     const { id } = req.params;
 
-    // 2. Fetch listing
-    const [listings] = await pool.query(
-      'SELECT id, title, subtitle, description, property_type, location, price_per_night, guests, bedrooms, beds, baths, rating, review_count, host_name, host_since, host_is_superhost FROM listings WHERE id = ?',
-      [id]
-    );
+    // Search by Mongo _id or numericId for backward compatibility
+    let query;
+    if (/^\d+$/.test(id)) {
+      query = { numericId: parseInt(id, 10) };
+    } else {
+      query = { _id: id };
+    }
 
-    if (listings.length === 0) {
+    const listingDoc = await Listing.findOne(query);
+
+    if (!listingDoc) {
       const err = new Error('Listing not found.');
       err.statusCode = 404;
       return next(err);
     }
 
-    const listing = listings[0];
+    const listingObj = listingDoc.toObject();
+    const photos = (listingObj.photos || []).map((p, idx) => ({
+      id: p._id ? p._id.toString() : idx + 1,
+      url: p.url,
+      room_label: p.room_label,
+      caption: p.caption,
+      sort_order: p.sort_order,
+    }));
 
-    // 3. Fetch photos
-    const [photos] = await pool.query(
-      'SELECT id, url, room_label, caption, sort_order FROM listing_photos WHERE listing_id = ? ORDER BY sort_order ASC',
-      [id]
-    );
+    const amenities = (listingObj.amenities || []).map((a, idx) => ({
+      id: a._id ? a._id.toString() : idx + 1,
+      label: a.label,
+      icon_key: a.icon_key,
+    }));
 
-    // 4. Fetch amenities
-    const [amenities] = await pool.query(
-      'SELECT id, label, icon_key FROM amenities WHERE listing_id = ? ORDER BY id ASC',
-      [id]
-    );
+    const listing = {
+      id: listingObj.numericId || listingObj._id.toString(),
+      _id: listingObj._id.toString(),
+      title: listingObj.title,
+      subtitle: listingObj.subtitle,
+      description: listingObj.description,
+      property_type: listingObj.property_type,
+      location: listingObj.location,
+      price_per_night: listingObj.price_per_night,
+      guests: listingObj.guests,
+      bedrooms: listingObj.bedrooms,
+      beds: listingObj.beds,
+      baths: listingObj.baths,
+      rating: listingObj.rating,
+      review_count: listingObj.review_count,
+      host_name: listingObj.host_name,
+      host_since: listingObj.host_since,
+      host_is_superhost: listingObj.host_is_superhost ? 1 : 0,
+    };
 
     res.json({
-      listing: {
-        ...listing,
-        price_per_night: parseFloat(listing.price_per_night),
-      },
+      listing,
       photos,
       amenities,
     });

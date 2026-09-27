@@ -3,49 +3,37 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { BASE_URL } from '../services/api';
 
-export default function Register() {
+export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const { setUser } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
 
     try {
-      // 1. Register
-      const registerRes = await fetch(`${BASE_URL}/api/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-      const registerData = await registerRes.json();
-      if (!registerRes.ok) {
-        throw new Error(registerData.error || 'Registration failed');
-      }
-      
-      // 2. Auto Login
-      const loginRes = await fetch(`${BASE_URL}/api/auth/login`, {
+      const res = await fetch(`${BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
         credentials: 'include',
       });
-      if (!loginRes.ok) {
-        throw new Error('Registration succeeded, but auto-login failed. Please sign in manually.');
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Login failed');
       }
       
-      // 3. Fetch User
+      // Fetch user data directly after login to sync context
       const meRes = await fetch(`${BASE_URL}/api/auth/me`, { credentials: 'include' });
       const meData = await meRes.json();
       setUser(meData.user);
-      
       navigate('/');
-    } catch (err: any) {
+    } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
@@ -63,8 +51,8 @@ export default function Register() {
                     <span
                         className="material-symbols-outlined text-primary text-[36px] transition-transform duration-200 group-hover:rotate-45">wb_sunny</span>
                 </Link>
-                <h1 className="font-headline-lg text-headline-lg tracking-tight text-on-surface font-serif text-center mb-2">Join Solstice</h1>
-                <p className="text-on-surface-variant font-body-md text-center">Create an account to save your favorite sanctuaries</p>
+                <h1 className="font-headline-lg text-headline-lg tracking-tight text-on-surface font-serif text-center mb-2">Welcome Back</h1>
+                <p className="text-on-surface-variant font-body-md text-center">Sign in to your Solstice account</p>
             </div>
 
             {error && (
@@ -95,24 +83,37 @@ export default function Register() {
                         value={password}
                         onChange={e => setPassword(e.target.value)}
                         className="w-full px-4 py-3 bg-surface border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary transition-all text-on-surface font-body-md"
-                        placeholder="Must be at least 8 characters"
+                        placeholder="••••••••"
                     />
+                </div>
+                
+                <div className="flex justify-end mt-1 mb-2">
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setEmail('root@solstice.com');
+                            setPassword('root1234');
+                        }}
+                        className="text-primary hover:text-[#7a3020] font-label-md font-semibold transition-colors focus:outline-none focus:underline"
+                    >
+                        Use test root user credentials
+                    </button>
                 </div>
                 
                 <button
                     type="submit"
                     disabled={loading}
-                    className="w-full mt-2 bg-primary text-on-primary py-3.5 px-6 rounded-xl font-label-lg font-semibold hover:bg-[#7a3020] transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 flex justify-center items-center disabled:opacity-70 disabled:cursor-not-allowed"
+                    className="w-full bg-primary text-on-primary py-3.5 px-6 rounded-xl font-label-lg font-semibold hover:bg-[#7a3020] transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 flex justify-center items-center disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                    {loading ? <span className="material-symbols-outlined animate-spin">progress_activity</span> : 'Create Account'}
+                    {loading ? <span className="material-symbols-outlined animate-spin">progress_activity</span> : 'Sign In'}
                 </button>
             </form>
 
             <div className="mt-8 text-center">
                 <p className="text-on-surface-variant font-body-sm text-sm">
-                    Already have an account?{' '}
-                    <Link to="/login" className="text-primary hover:underline font-semibold transition-all">
-                        Sign in instead
+                    Don't have an account?{' '}
+                    <Link to="/register" className="text-primary hover:underline font-semibold transition-all">
+                        Create one now
                     </Link>
                 </p>
             </div>
