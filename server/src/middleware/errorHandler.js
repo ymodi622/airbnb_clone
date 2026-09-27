@@ -16,12 +16,7 @@ function errorHandler(err, req, res, next) { // eslint-disable-line no-unused-va
   });
 
   const statusCode = err.statusCode || err.status || 500;
-
-  // In production, never expose internal error detail
-  const message =
-    config.nodeEnv === 'production'
-      ? 'An unexpected error occurred. Please try again later.'
-      : err.message || 'Internal server error';
+  const message = err.message || 'An unexpected error occurred.';
 
   res.status(statusCode).json({ error: message });
 }

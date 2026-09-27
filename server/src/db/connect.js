@@ -10,8 +10,14 @@ async function connectDB() {
   }
 
   if (!cachedPromise) {
+    const opts = {
+      bufferCommands: false,
+      serverSelectionTimeoutMS: 5000,
+      connectTimeoutMS: 10000,
+    };
+
     cachedPromise = mongoose
-      .connect(config.mongoUri)
+      .connect(config.mongoUri, opts)
       .then((conn) => {
         console.log(`[db] MongoDB connected: ${conn.connection.host}`);
         return conn;
