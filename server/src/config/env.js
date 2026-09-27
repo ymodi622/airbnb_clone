@@ -7,14 +7,29 @@ dotenv.config();
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 
+const mongoUser = process.env.MONGO_USER;
+const mongoPassword = process.env.MONGO_PASSWORD;
+const mongoHost = process.env.MONGO_HOST;
+const mongoDb = process.env.MONGO_DB || 'airbnb_db';
+
+let mongoUri = process.env.MONGODB_URI;
+if (mongoUser && mongoPassword && mongoHost) {
+  mongoUri = `mongodb+srv://${mongoUser}:${mongoPassword}@${mongoHost}/${mongoDb}`;
+}
+
 module.exports = {
   port: parseInt(process.env.PORT, 10) || 4000,
   nodeEnv: process.env.NODE_ENV || 'development',
-  mongoUri: process.env.MONGODB_URI || 'mongodb://localhost:27017/airbnb_db',
+  mongoUser,
+  mongoPassword,
+  mongoHost,
+  mongoDb,
+  mongoUri: mongoUri || 'mongodb://localhost:27017/airbnb_db',
   jwt: {
     secret: process.env.JWT_SECRET || 'solstice-sanctuary-jwt-secret-replace-in-production-please',
     expiresIn: '3h',
   },
   clientUrl: process.env.CLIENT_URL || 'http://localhost:5173',
 };
+
 
