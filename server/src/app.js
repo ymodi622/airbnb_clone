@@ -60,6 +60,18 @@ if (config.nodeEnv !== 'test') {
   app.use(morgan('dev'));
 }
 
+const connectDB = require('./db/connect');
+
+// ── Database connection middleware ───────────────────────────────────────────
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    next(err);
+  }
+});
+
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
